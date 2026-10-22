@@ -39,7 +39,7 @@ jobs:
           docker buildx bake \
             --set "*.platform=linux/${{ matrix.builder.arch }}" \
             --set "*.output=type=registry" \
-            --progress=quiet \
+            --progress=plain \
             --load \
             php${PHP_VERSION//.}-${{ matrix.variant }}-all
       - name: Display tags built
