@@ -8,11 +8,14 @@ jobs:
         os: [ubuntu-24.04, ubuntu-24.04-arm]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v7
       - run: |
-          for u in http://pecl.php.net/channel.xml http://pecl.php.net/rest/r/event/allreleases.xml; do
-            echo "=== $u"
-            curl -s --http1.0 -A 'PEAR/1.10.13/PHP/7.4.33' -D - -o body "$u" | tr -d '\r'
-            head -c 400 body | tr -c '[:print:]\n' '.'; echo
+          # exact request sent by PEAR 1.10.13 (PEAR/REST.php downloadHttp)
+          for p in /channel.xml /rest/r/event/allreleases.xml /rest/p/event/info.xml; do
+            for i in 1 2 3; do
+              echo "=== http $p #$i"
+              printf 'GET %s HTTP/1.1\r\nHost: pecl.php.net\r\nUser-Agent: PEAR/1.10.13/PHP/7.4.33\r\nAccept-Encoding:\r\nConnection: close\r\n\r\n' "$p" \
+                | nc -w 10 pecl.php.net 80 > resp
+              sed -n '1,/^\r$/p' resp | tr -d '\r' | grep -i -E '^HTTP|^server|^content-(length|encoding|type)|^transfer-encoding|^cdn-cache'
+              sed '1,/^\r$/d' resp | head -c 120 | od -c | head -3
+            done
           done
-      - run: docker run --rm -v $PWD/.github:/p:ro ubuntu:24.04 bash /p/pecl.sh 2>&1 | tail -30
