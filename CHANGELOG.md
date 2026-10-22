@@ -3,6 +3,9 @@
 
 ### Minor changes
 
+* **2026-10-22**
+  * Fix the build of the `ev` and `event` extensions (and of every PHP 7.4, 8.0 and 8.1 image): some edges of the pecl.php.net CDN send chunked responses that PEAR cannot read, so the archive is now downloaded with curl
+
 * **2026-10-19**
   * New documentation page for the fpm variant: serving HTTP (built-in Apache or another web server), constraints of PHP-FPM and migration from the apache variant
   * fpm variant: the time the built-in Apache waits for PHP-FPM can be configured with `APACHE_PROXY_TIMEOUT` (300 seconds by default)

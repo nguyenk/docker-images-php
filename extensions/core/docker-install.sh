@@ -41,8 +41,11 @@ if [ -n "$PECL_EXTENSION" ]; then
     fi
 
     if [ -n "$USE_PECL" ]; then
-      pecl channel-update pecl.php.net && pecl channel-update pear.php.net
-      pecl install $PECL_EXTENSION
+      # The HTTP client of PEAR does not decode chunked responses, which some edges of the pecl.php.net CDN send:
+      # download the archive with curl and install it from the local file.
+      curl -fsSL "https://pecl.php.net/get/${PECL_EXTENSION}" -o "/tmp/${PECL_EXTENSION}.tgz"
+      pecl install "/tmp/${PECL_EXTENSION}.tgz"
+      rm "/tmp/${PECL_EXTENSION}.tgz"
     else
       pickle install $PECL_EXTENSION
     fi
