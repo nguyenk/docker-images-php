@@ -8,12 +8,11 @@ jobs:
         os: [ubuntu-24.04, ubuntu-24.04-arm]
     runs-on: ${{ matrix.os }}
     steps:
+      - uses: actions/checkout@v7
       - run: |
-          curl -s https://ifconfig.me; echo
-          for u in https://pecl.php.net/channel.xml https://pecl.php.net/rest/r/event/allreleases.xml https://pecl.php.net/get/event-3.1.6.tgz; do
-            for ua in 'PEAR/1.10.13/PHP/7.4.33' 'curl/8.5.0'; do
-              echo "=== $u  UA=$ua"
-              curl -s -A "$ua" -D - -o body -w 'size=%{size_download}\n' "$u" | grep -i -E '^HTTP|^content-type|^server|^cf-|size='
-              head -c 300 body | tr -c '[:print:]\n' '.'; echo
-            done
+          for u in http://pecl.php.net/channel.xml http://pecl.php.net/rest/r/event/allreleases.xml; do
+            echo "=== $u"
+            curl -s --http1.0 -A 'PEAR/1.10.13/PHP/7.4.33' -D - -o body "$u" | tr -d '\r'
+            head -c 400 body | tr -c '[:print:]\n' '.'; echo
           done
+      - run: docker run --rm -v $PWD/.github:/p:ro ubuntu:24.04 bash /p/pecl.sh 2>&1 | tail -30
